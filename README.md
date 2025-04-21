@@ -25,11 +25,7 @@ A simple, robust job recommendation system specifically designed for blue collar
    ```
    pip install -r requirements.txt
    ```
-4. (Optional) Prepare an Excel file named `SyntheticJobsONEST.xlsx` with job data
-   - The system will automatically load this file if available in the root directory
-   - Otherwise, it will fall back to sample job data
-
-5. Run the application:
+4. Run the application:
    ```
    python app.py
    ```
