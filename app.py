@@ -941,85 +941,6 @@ def generate_recommendation_reason(user_profile: UserProfile, recommended_jobs: 
     except Exception as e:
         return f"Jobs recommended based on your location ({user_profile.location.city}, {user_profile.location.state}), gender ({user_profile.gender}), skills, and experience preferences."
 
-# API endpoints
-# @app.post("/extract-profile", response_model=UserProfile, 
-#          summary="Extract a structured user profile from text",
-#          description="Takes a free-text description of a user and extracts structured information about their skills, qualifications, and preferences.")
-# async def extract_profile_endpoint(input_data: UserProfileInput):
-#     """
-#     Extract a structured user profile from a text description.
-    
-#     - **text_description**: Free text description of the user's background and preferences
-    
-#     Returns a structured UserProfile object with all the extracted information.
-#     """
-#     return extract_user_profile(input_data.text_description)
-
-# @app.post("/recommend-jobs", response_model=JobRecommendationResponse,
-#          summary="Get job recommendations from a user profile object",
-#          description="Takes a structured user profile and returns job recommendations filtered by location, qualifications, and job preferences.")
-# async def recommend_jobs_endpoint(request: JobRecommendationRequest):
-#     """
-#     Get job recommendations based on a user profile.
-    
-#     - **profile**: Complete user profile object with demographic info, skills, and preferences
-    
-#     Returns a list of recommended jobs with an explanation of why they were recommended.
-#     """
-#     # Get recommended jobs
-#     recommended_jobs = search_jobs(request.profile)
-    
-#     if not recommended_jobs:
-#         return JobRecommendationResponse(
-#             user_profile=request.profile,
-#             recommended_jobs=[],
-#             recommendation_reason="No jobs found matching your location and gender requirements. Try broadening your search parameters or check back later for new job postings."
-#         )
-    
-#     # Generate explanation for recommendations
-#     recommendation_reason = generate_recommendation_reason(request.profile, recommended_jobs)
-    
-#     # Evaluate the recommendation
-#     evaluation = evaluate_response(
-#         f"Finding jobs for {request.profile.name} with skills: {', '.join(request.profile.skills)}",
-#         f"Recommended jobs: {', '.join([job.title for job in recommended_jobs])}"
-#     )
-    
-#     # If evaluation suggests a rewrite, use it to search again
-#     if evaluation != "Yes":
-#         # Use the evaluation as a new query to search again
-#         try:
-#             model = genai.GenerativeModel('gemini-2.0-flash-exp')
-            
-#             revised_query = f"""
-#             Based on this profile:
-#             User: {request.profile.name}, Age: {request.profile.age}, Gender: {request.profile.gender},
-#             Skills: {', '.join(request.profile.skills)},
-#             Experience: {request.profile.experience} years,
-#             Location: {request.profile.location.city}, {request.profile.location.state},
-            
-#             Generate a better search query to find suitable blue-collar jobs in India.
-#             """
-            
-#             response = model.generate_content(revised_query)
-#             new_query = response.text.strip()
-            
-#             # Search with the new query - but still enforce location/gender filtering
-#             new_recommended_jobs = search_jobs(request.profile)
-            
-#             if new_recommended_jobs:
-#                 recommended_jobs = new_recommended_jobs
-#                 recommendation_reason = generate_recommendation_reason(request.profile, recommended_jobs)
-#         except Exception:
-#             # If revision fails, stick with original recommendations
-#             pass
-    
-#     return JobRecommendationResponse(
-#         user_profile=request.profile,
-#         recommended_jobs=recommended_jobs,
-#         recommendation_reason=recommendation_reason
-#     )
-
 @app.post("/recommend", response_model=JobRecommendationResponse,
          summary="Get job recommendations from a JSON profile",
          description="The primary endpoint for job recommendations. Takes a JSON user profile and returns personalized job recommendations.")
@@ -1107,40 +1028,6 @@ async def combined_recommendation_endpoint(request_data: dict):
         recommended_jobs=recommended_jobs,
         recommendation_reason=recommendation_reason
     )
-
-# @app.post("/upload-jobs", 
-#          summary="Upload job data from Excel file",
-#          description="Upload an Excel file containing job listings to replace the existing job database.")
-# async def upload_jobs_file(file: UploadFile = File(...)):
-#     """
-#     Upload Excel file with job data and rebuild the vector database.
-    
-#     - **file**: Excel file (.xlsx or .xls) containing job listings data
-    
-#     The file should have columns for job titles, descriptions, locations, qualifications, etc.
-#     """
-#     global jobs, faiss_index
-    
-#     if not file.filename.endswith(('.xlsx', '.xls')):
-#         raise HTTPException(status_code=400, detail="File must be an Excel file (.xlsx or .xls)")
-    
-#     try:
-#         # Save the uploaded file
-#         file_path = "jobs_data.xlsx"
-#         with open(file_path, "wb") as f:
-#             f.write(await file.read())
-        
-#         # Load jobs from the file
-#         jobs_data = load_jobs_from_excel(file_path)
-#         jobs = [Job(**job) for job in jobs_data]
-        
-#         # Rebuild FAISS index
-#         faiss_index = initialize_faiss_index(jobs)
-        
-#         return {"message": f"Successfully uploaded and processed {len(jobs)} jobs"}
-    
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"Failed to process file: {str(e)}")
 
 @app.get("/", 
         summary="API Health Check",
